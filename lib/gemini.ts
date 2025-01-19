@@ -1,7 +1,16 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, RequestOptions } from "@google/generative-ai";
 import { RedditPost } from "./reddit";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_FLASH_API_KEY!);
+const customHeaders = new Headers({
+  "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+  "Helicone-Target-URL": `https://generativelanguage.googleapis.com`,
+});
+
+const requestOptions = {
+  customHeaders: customHeaders,
+  baseUrl: "https://gateway.helicone.ai",
+} as RequestOptions;
 
 export interface Theme {
   id: string;
@@ -51,7 +60,7 @@ Important rules:
 Analyze the posts and categorize them based on their content and sentiment.`;
 
 export async function analyzePost(post: RedditPost): Promise<PostAnalysis> {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" }, requestOptions);
 
   const prompt = `
 Analyze this Reddit post and determine which categories it belongs to.
