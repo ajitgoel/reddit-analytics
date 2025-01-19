@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, parseISO } from "date-fns";
 import { ArrowUpIcon, MessageSquare } from "lucide-react";
 
 export interface RedditPost {
@@ -16,7 +16,7 @@ export interface RedditPost {
   title: string;
   score: number;
   numComments: number;
-  createdAt: Date;
+  createdAt: string;
   url: string;
 }
 
@@ -58,7 +58,7 @@ export function PostsTable({ posts }: PostsTableProps) {
               <TableCell>{post.score.toLocaleString()}</TableCell>
               <TableCell>{post.numComments.toLocaleString()}</TableCell>
               <TableCell>
-                {formatDistanceToNow(post.createdAt, { addSuffix: true })}
+                {formatDistanceToNow(parseISO(post.createdAt), { addSuffix: true })}
               </TableCell>
             </TableRow>
           ))}
