@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 export interface RedditPost {
   id: string;
@@ -26,6 +27,7 @@ export interface RedditPost {
   numComments: number;
   createdAt: string;
   url: string;
+  categories?: string[];
 }
 
 interface PostsTableProps {
@@ -106,6 +108,7 @@ export function PostsTable({ posts }: PostsTableProps) {
                 Comments
               </TableHead>
               <TableHead className="w-[150px]">Posted</TableHead>
+              <TableHead>Categories</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -127,6 +130,15 @@ export function PostsTable({ posts }: PostsTableProps) {
                   {formatDistanceToNow(parseISO(post.createdAt), {
                     addSuffix: true,
                   })}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {post.categories?.map((category, index) => (
+                      <Badge key={index} variant="secondary">
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

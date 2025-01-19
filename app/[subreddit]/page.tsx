@@ -162,7 +162,7 @@ export default function SubredditPage({ params }: PageProps) {
 
       <Sheet open={!!selectedTheme} onOpenChange={() => setSelectedTheme(null)}>
         <SheetContent className="sm:max-w-xl">
-          <SheetHeader className="space-y-4">
+          <SheetHeader>
             <SheetTitle className="flex items-center justify-between">
               {selectedTheme?.name}
               <Badge
@@ -178,10 +178,10 @@ export default function SubredditPage({ params }: PageProps) {
                 {selectedTheme?.sentiment}
               </Badge>
             </SheetTitle>
-            <SheetDescription>
-              <p className="text-sm text-muted-foreground mb-2">
+            <div className="space-y-2">
+              <div className="text-sm text-muted-foreground">
                 {selectedTheme?.description}
-              </p>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {selectedTheme?.keywords.map((keyword, index) => (
                   <Badge key={index} variant="secondary">
@@ -189,34 +189,36 @@ export default function SubredditPage({ params }: PageProps) {
                   </Badge>
                 ))}
               </div>
-            </SheetDescription>
+            </div>
           </SheetHeader>
           <div className="mt-6 space-y-4">
             <h3 className="text-sm font-medium">Posts in this theme:</h3>
-            {selectedTheme?.posts.map((post, index) => (
-              <div key={index} className="space-y-1">
-                <a
-                  href={post.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline block"
-                >
-                  {post.title}
-                </a>
-                <Badge
-                  variant="outline"
-                  className={`${
-                    post.sentiment === "positive"
-                      ? "bg-green-100 text-green-800"
-                      : post.sentiment === "negative"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {post.sentiment}
-                </Badge>
-              </div>
-            ))}
+            <div className="space-y-4">
+              {selectedTheme?.posts.map((post, index) => (
+                <div key={index} className="space-y-1">
+                  <a
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline block"
+                  >
+                    {post.title}
+                  </a>
+                  <Badge
+                    variant="outline"
+                    className={`${
+                      post.sentiment === "positive"
+                        ? "bg-green-100 text-green-800"
+                        : post.sentiment === "negative"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {post.sentiment}
+                  </Badge>
+                </div>
+              ))}
+            </div>
           </div>
         </SheetContent>
       </Sheet>

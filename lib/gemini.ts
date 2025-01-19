@@ -17,6 +17,11 @@ export interface Theme {
   }[];
 }
 
+export interface PostAnalysis {
+  categories: string[];
+  sentiment: "positive" | "negative" | "neutral";
+}
+
 const ANALYSIS_PROMPT = `
 Analyze these Reddit posts and categorize them into themes. Return a JSON object with the following structure:
 
@@ -45,92 +50,115 @@ Important rules:
 
 Analyze the posts and categorize them based on their content and sentiment.`;
 
+export async function analyzePost(post: RedditPost): Promise<PostAnalysis> {
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+  const prompt = `
+Analyze this Reddit post and determine which categories it belongs to.
+Categories must be from: "Solution Requests", "Pain & Anger", "Advice Requests", "Money Talk"
+A post can belong to multiple categories.
+
+Post title: ${post.title}
+${post.content ? `Post content: ${post.content}` : ''}
+
+Return ONLY a JSON object with this structure (no markdown, no backticks, no explanation):
+{
+  "categories": ["Category1", "Category2"],
+  "sentiment": "positive|negative|neutral"
+}`;
+
+  const result = await model.generateContent({
+    contents: [{ 
+      role: "user", 
+      parts: [{ text: prompt }]
+    }],
+    generationConfig: {
+      temperature: 0.1,
+      maxOutputTokens: 1024,
+    },
+  });
+
+  const response = await result.response;
+  const text = response.text().trim();
+
+  try {
+    // Clean the response by removing markdown formatting
+    const cleanedText = text
+      .replace(/```json\n?/g, '')  // Remove ```json
+      .replace(/```\n?/g, '')      // Remove closing ```
+      .trim();                     // Remove extra whitespace
+
+    // Find the JSON object in the response
+    const jsonStart = cleanedText.indexOf('{');
+    const jsonEnd = cleanedText.lastIndexOf('}') + 1;
+    const jsonText = cleanedText.slice(jsonStart, jsonEnd);
+
+    const analysis = JSON.parse(jsonText);
+
+    // Validate and filter categories
+    const validCategories = ["Solution Requests", "Pain & Anger", "Advice Requests", "Money Talk"];
+    const categories = Array.isArray(analysis.categories) 
+      ? analysis.categories.filter((cat: string) => validCategories.includes(cat))
+      : [];
+
+    // Validate sentiment
+    const validSentiments = ["positive", "negative", "neutral"];
+    const sentiment = validSentiments.includes(analysis.sentiment) 
+      ? analysis.sentiment 
+      : "neutral";
+
+    return { categories, sentiment };
+  } catch (error) {
+    console.error("Error parsing post analysis:", error);
+    console.error("Raw response:", text);
+    return { categories: [], sentiment: "neutral" };
+  }
+}
+
 export async function analyzeRedditPosts(posts: RedditPost[]): Promise<Theme[]> {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // First analyze each post individually
+    const postAnalyses = await Promise.all(
+      posts.map(async post => {
+        const analysis = await analyzePost(post);
+        return {
+          ...post,
+          categories: analysis.categories,
+          sentiment: analysis.sentiment
+        };
+      })
+    );
 
-    const postsForAnalysis = posts.map(post => ({
-      id: post.id,
-      title: post.title,
-      content: post.content || "",
-    }));
+    // Group posts by theme
+    const themeMap = new Map<string, Theme>();
+    
+    postAnalyses.forEach(post => {
+      post.categories.forEach(category => {
+        if (!themeMap.has(category)) {
+          themeMap.set(category, {
+            id: category.toLowerCase().replace(/\s+/g, '-'),
+            name: category,
+            description: `Posts related to ${category}`,
+            sentiment: "neutral",
+            keywords: [],
+            postCount: 0,
+            posts: []
+          });
+        }
 
-    if (postsForAnalysis.length === 0) {
-      return [];
-    }
-
-    // Format the input data
-    const inputData = JSON.stringify(postsForAnalysis, null, 2);
-    console.log("Analyzing posts:", inputData);
-
-    const result = await model.generateContent({
-      contents: [{ 
-        role: "user", 
-        parts: [{ 
-          text: `${ANALYSIS_PROMPT}\n\nPosts to analyze:\n${inputData}\n\nRespond with only the JSON object, no additional text.`
-        }]
-      }],
-      generationConfig: {
-        temperature: 0.1, // Reduced temperature for more consistent output
-        maxOutputTokens: 2048,
-      },
+        const theme = themeMap.get(category)!;
+        theme.postCount++;
+        theme.posts.push({
+          title: post.title,
+          url: post.url,
+          sentiment: post.sentiment
+        });
+      });
     });
 
-    const response = await result.response;
-    const text = response.text().trim();
-    
-    console.log("Raw Gemini Response:", text);
-
-    // Try to clean the response if it's not pure JSON
-    const jsonStart = text.indexOf('{');
-    const jsonEnd = text.lastIndexOf('}') + 1;
-    const jsonText = text.slice(jsonStart, jsonEnd);
-
-    try {
-      const analysis = JSON.parse(jsonText);
-
-      if (!analysis.themes || !Array.isArray(analysis.themes)) {
-        console.error("Invalid response structure:", analysis);
-        throw new Error("Invalid response format from Gemini");
-      }
-
-      // Transform and validate the themes
-      return analysis.themes.map((theme: any, index: number) => {
-        // Validate theme name
-        if (!["Solution Requests", "Pain & Anger", "Advice Requests", "Money Talk"].includes(theme.name)) {
-          console.warn(`Invalid theme name: ${theme.name}, using default`);
-          theme.name = "Solution Requests";
-        }
-
-        // Validate sentiment
-        if (!["positive", "negative", "neutral"].includes(theme.sentiment)) {
-          theme.sentiment = "neutral";
-        }
-
-        return {
-          id: `theme-${index + 1}`,
-          name: theme.name,
-          description: theme.description || `Posts related to ${theme.name}`,
-          sentiment: theme.sentiment as "positive" | "negative" | "neutral",
-          keywords: Array.isArray(theme.keywords) ? theme.keywords.slice(0, 5) : [],
-          postCount: theme.posts?.length || 0,
-          posts: (theme.posts || []).map((postId: string) => {
-            const post = posts.find(p => p.id === postId);
-            return {
-              title: post?.title || "",
-              url: post?.url || "",
-              sentiment: theme.postSentiments?.[postId] || "neutral"
-            };
-          })
-        };
-      });
-    } catch (parseError) {
-      console.error("Error parsing Gemini response:", parseError);
-      console.error("Attempted to parse:", jsonText);
-      throw new Error(`Failed to parse Gemini response: ${parseError.message}`);
-    }
+    return Array.from(themeMap.values());
   } catch (error) {
-    console.error("Error in analyzeRedditPosts:", error);
+    console.error("Error analyzing posts:", error);
     throw error;
   }
 } 
