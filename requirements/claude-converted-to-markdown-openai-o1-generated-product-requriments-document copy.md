@@ -69,7 +69,7 @@ We are building a Reddit analytics platform that allows users to obtain analytic
   - Advice Requests: Seeking advice.
   - Money Talk: Discussing spending money.
 - **Process**:
-  - For each post, send data to OpenAI for categorization.
+  - For each post, send data to gemini flash for categorization.
   - Use structured output to receive boolean flags for each category.
 - **Concurrency**:
   - Perform API calls concurrently to improve performance.
@@ -90,7 +90,7 @@ We are building a Reddit analytics platform that allows users to obtain analytic
 - **Components**:
   - AddCategoryModal: Handles the addition of new categories.
 - **Data Update**:
-  - Update the OpenAI prompt to include the new category.
+  - Update the gemini flash prompt to include the new category.
 
 ## File Structure
 
@@ -190,12 +190,12 @@ const posts = await fetchRecentPosts('ollama');
 - Authentication: Replace the placeholder credentials with actual Reddit API credentials.
 - Error Handling: Ensure proper error handling for failed API calls.
 
-### 2. OpenAI Structured Output for Post Categorization
+### 2. gemini flash Structured Output for Post Categorization
 
 #### Installation
 
 ```bash
-npm install openai zod
+npm install @google/generative-ai
 ```
 
 #### Code Example
@@ -274,7 +274,7 @@ Post Analysis: {
 
 **Notes**:
 - Concurrency: Use Promise.all to process multiple posts concurrently.
-- API Limits: Be mindful of OpenAI's rate limits and error handling.
+- API Limits: Be mindful of google flash's rate limits and error handling.
 - Dynamic Categories: If new categories are added, update the PostCategoryAnalysisSchema accordingly.
 
 ### 3. Component and State Management
@@ -295,11 +295,11 @@ Post Analysis: {
   - Fetch posts in getServerSideProps or using useEffect for client-side fetching.
 - **State**:
   - posts: Array of RedditPost.
-  - categories: Analysis results from OpenAI.
+  - categories: Analysis results from google flash.
   - activeTab: Currently selected tab.
 - **Functions**:
   - fetchPosts: Fetches recent posts using Snoowrap.
-  - analyzePosts: Categorizes posts using OpenAI.
+  - analyzePosts: Categorizes posts using google flash.
 - **Components**:
   - Tabs
   - PostsTable
@@ -314,14 +314,14 @@ Post Analysis: {
 - **Reddit API**:
   - Obtain credentials from Reddit Apps.
   - Ensure secure storage of clientId, clientSecret, username, and password.
-- **OpenAI API**:
-  - Obtain API key from OpenAI Dashboard.
+- **google flash API**:
+  - Obtain API key from google flash Dashboard.
   - Securely store the apiKey.
 
 ### Concurrency and Performance
 
 - **Concurrent Processing**:
-  - Use Promise.all for concurrent API calls to OpenAI.
+  - Use Promise.all for concurrent API calls to google flash.
   - Limit concurrency if necessary to avoid rate limits.
 - **Caching**:
   - Implement caching strategies for Reddit posts and analysis results if appropriate.
@@ -329,7 +329,7 @@ Post Analysis: {
 ### Error Handling
 
 - **API Errors**:
-  - Gracefully handle errors from both Reddit and OpenAI APIs.
+  - Gracefully handle errors from both Reddit and google flash APIs.
   - Provide user feedback in the UI for any issues.
 - **Validation**:
   - Validate user inputs when adding subreddits or categories.

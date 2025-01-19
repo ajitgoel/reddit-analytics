@@ -24,22 +24,26 @@ export async function fetchRecentPosts(subreddit: string): Promise<RedditPost[]>
   const oneDayAgo = now - 24 * 60 * 60;
 
   try {
+    console.log(`Fetching posts for r/${subreddit}`);
     const posts = await reddit.getSubreddit(subreddit).getNew({ limit: 100 });
+    console.log('Raw Reddit response:', posts);
     
     const plainPosts = await Promise.all(posts.map(post => post.toJSON()));
-    
+    console.log('Plain posts:', plainPosts);
+
     const recentPosts = plainPosts
       .filter((post) => post.created_utc > oneDayAgo)
       .map((post) => ({
         id: post.id,
         title: post.title,
-        content: post.selftext,
+        content: post.selftext || post.title, // Use title as fallback content
         score: post.score,
         numComments: post.num_comments,
         createdAt: new Date(post.created_utc * 1000).toISOString(),
-        url: post.url
+        url: `https://reddit.com${post.permalink}`
       }));
 
+    console.log(`Found ${recentPosts.length} recent posts`);
     return recentPosts;
   } catch (error) {
     console.error('Error fetching Reddit posts:', error);
