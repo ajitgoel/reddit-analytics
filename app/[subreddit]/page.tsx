@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { use } from "react";
 import { PostsTable, type RedditPost } from "@/components/PostsTable";
@@ -11,6 +11,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { getSubredditPosts } from "@/app/actions/reddit";
+import { LoadingSpinner } from "@/components/LoadingSpinner";
 
 interface PageProps {
   params: Promise<{ subreddit: string }>;
@@ -71,6 +73,27 @@ export default function SubredditPage({ params }: PageProps) {
   const { subreddit } = use(params);
   const [activeTab, setActiveTab] = useState("posts");
   const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
+  const [posts, setPosts] = useState<RedditPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadPosts() {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const fetchedPosts = await getSubredditPosts(subreddit);
+        setPosts(fetchedPosts);
+      } catch (err) {
+        setError("Failed to load posts. Please try again later.");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadPosts();
+  }, [subreddit]);
 
   return (
     <>
@@ -80,7 +103,21 @@ export default function SubredditPage({ params }: PageProps) {
           <TabsTrigger value="themes">Themes</TabsTrigger>
         </TabsList>
         <TabsContent value="posts" className="space-y-4">
-          <PostsTable posts={mockPosts} />
+          {isLoading ? (
+            <div className="flex justify-center p-8">
+              <LoadingSpinner />
+            </div>
+          ) : error ? (
+            <div className="rounded-lg border border-red-200 p-8 text-center text-red-800">
+              {error}
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="rounded-lg border p-8 text-center text-muted-foreground">
+              No posts found in the last 24 hours.
+            </div>
+          ) : (
+            <PostsTable posts={posts} />
+          )}
         </TabsContent>
         <TabsContent value="themes" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
