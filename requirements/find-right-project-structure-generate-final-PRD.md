@@ -141,7 +141,6 @@ Post Analysis: {
 }
 ```
 
-
 **# Current file structure**
 app
   components
