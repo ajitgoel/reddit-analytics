@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI, RequestOptions } from "@google/generative-ai";
 import { RedditPost } from "./reddit";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_FLASH_API_KEY!);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const customHeaders = new Headers({
   "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
   "Helicone-Target-URL": `https://generativelanguage.googleapis.com`,

@@ -1,22 +1,28 @@
-import snoowrap from "snoowrap";
-
-// Initialize the Snoowrap client
-const reddit = new snoowrap({
-  userAgent: process.env.REDDIT_USER_AGENT!,
-  clientId: process.env.REDDIT_CLIENT_ID!,
-  clientSecret: process.env.REDDIT_CLIENT_SECRET!,
-  username: process.env.REDDIT_USERNAME!,
-  password: process.env.REDDIT_PASSWORD!,
-});
+import Snoowrap from 'snoowrap';
 
 export interface RedditPost {
   id: string;
   title: string;
+  selftext: string;
   score: number;
-  numComments: number;
-  createdAt: string;
+  num_comments: number;
+  created_utc: number;
   url: string;
-  content: string;
+}
+
+let redditClient: Snoowrap | null = null;
+
+export function getRedditClient(): Snoowrap {
+  if (!redditClient) {
+    redditClient = new Snoowrap({
+      userAgent: 'reddit-analytics-app',
+      clientId: process.env.REDDIT_CLIENT_ID,
+      clientSecret: process.env.REDDIT_CLIENT_SECRET,
+      username: process.env.REDDIT_USERNAME!,
+      password: process.env.REDDIT_PASSWORD!
+    });
+  }
+  return redditClient;
 }
 
 export async function fetchRecentPosts(subreddit: string): Promise<RedditPost[]> {
@@ -25,7 +31,7 @@ export async function fetchRecentPosts(subreddit: string): Promise<RedditPost[]>
 
   try {
     console.log(`Fetching posts for r/${subreddit}`);
-    const posts = await reddit.getSubreddit(subreddit).getNew({ limit: 100 });
+    const posts = await getRedditClient().getSubreddit(subreddit).getNew({ limit: 100 });
     console.log('Raw Reddit response:', posts);
     
     const plainPosts = await Promise.all(posts.map(post => post.toJSON()));

@@ -13,5 +13,4 @@ Help me write a simple typescript to using google flash 2.0 to categorise a redd
 
 npx shadcn@latest init
 npx shadcn@latest add badge button card input label sheet table tabs
-npm install tree
-tree -L 2 -I 'node_modules|.git'
+delete node_modules, .next folder and then run powershell => `tree /F | Out-File -Encoding UTF8 tree.txt` to get tree structure. 

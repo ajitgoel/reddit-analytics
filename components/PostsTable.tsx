@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatDistanceToNow, parseISO } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { ArrowUpIcon, MessageSquare, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,22 +19,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { CATEGORY_IDS } from "@/lib/constants";
 
 export interface RedditPost {
   id: string;
   title: string;
   score: number;
-  numComments: number;
-  createdAt: string;
+  num_comments: number;
+  created_utc: Date;
   url: string;
-  categories?: string[];
+  post_categories?: {
+    category_id: string;
+    is_relevant: boolean;
+  }[];
 }
 
 interface PostsTableProps {
   posts: RedditPost[];
 }
 
-type SortField = "score" | "numComments" | "createdAt";
+type SortField = "score" | "num_comments" | "created_utc";
 type SortOrder = "asc" | "desc";
 
 const ITEMS_PER_PAGE = 10;
@@ -46,7 +50,7 @@ export function PostsTable({ posts }: PostsTableProps) {
 
   const sortedPosts = [...posts].sort((a, b) => {
     const modifier = sortOrder === "asc" ? 1 : -1;
-    if (sortField === "createdAt") {
+    if (sortField === "created_utc") {
       return (
         (new Date(a[sortField]).getTime() - new Date(b[sortField]).getTime()) *
         modifier
@@ -84,10 +88,10 @@ export function PostsTable({ posts }: PostsTableProps) {
             <DropdownMenuItem onClick={() => handleSort("score")}>
               Upvotes
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSort("numComments")}>
+            <DropdownMenuItem onClick={() => handleSort("num_comments")}>
               Comments
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleSort("createdAt")}>
+            <DropdownMenuItem onClick={() => handleSort("created_utc")}>
               Date
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -124,18 +128,21 @@ export function PostsTable({ posts }: PostsTableProps) {
                     {post.title}
                   </a>
                 </TableCell>
-                <TableCell>{post.score.toLocaleString()}</TableCell>
-                <TableCell>{post.numComments.toLocaleString()}</TableCell>
+                <TableCell>{(post.score || 0).toLocaleString()}</TableCell>
+                <TableCell>{(post.num_comments || 0).toLocaleString()}</TableCell>
                 <TableCell>
-                  {formatDistanceToNow(parseISO(post.createdAt), {
+                  {formatDistanceToNow(new Date(post.created_utc), {
                     addSuffix: true,
                   })}
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {post.categories?.map((category, index) => (
-                      <Badge key={index} variant="secondary">
-                        {category}
+                    {post.post_categories?.filter(cat => cat.is_relevant).map((category) => (
+                      <Badge 
+                        key={`${post.id}-${category.category_id}`}
+                        variant="secondary"
+                      >
+                        {getCategoryName(category.category_id)}
                       </Badge>
                     ))}
                   </div>
@@ -169,4 +176,16 @@ export function PostsTable({ posts }: PostsTableProps) {
       )}
     </div>
   );
+}
+
+// Helper function to get category name from ID
+function getCategoryName(categoryId: string): string {
+  const categoryMap = {
+    [CATEGORY_IDS.SOLUTION_REQUEST]: "Solution Request",
+    [CATEGORY_IDS.PAIN_POINT]: "Pain Point",
+    [CATEGORY_IDS.FEATURE_REQUEST]: "Feature Request",
+    [CATEGORY_IDS.BUG_REPORT]: "Bug Report",
+    [CATEGORY_IDS.SUCCESS_STORY]: "Success Story",
+  };
+  return categoryMap[categoryId as keyof typeof categoryMap] || "Unknown";
 } 
