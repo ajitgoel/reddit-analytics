@@ -98,29 +98,80 @@ The project aims for minimal files without compromising clarity.
 
 ```
 reddit-analytics
-+-- app
-¦   +-- favicon.ico
-¦   +-- fonts
-¦   +-- globals.css
-¦   +-- layout.tsx          // Main layout with header and footer
-¦   +-- page.tsx            // Home page with subreddit list
-¦   +-- [subreddit]
-¦       +-- page.tsx        // Subreddit detail page with tabs
-+-- lib
-¦   +-- utils.ts            // Utility functions for data fetching and processing
-+-- components              // Reusable components
-¦   +-- SubredditCard.tsx   // Card component for subreddits
-¦   +-- AddSubredditModal.tsx // Modal for adding subreddits
-¦   +-- Tabs.tsx            // Tabs component for navigation
-¦   +-- PostsTable.tsx      // Table component for displaying posts
-¦   +-- ThemeCard.tsx       // Card component for themes
-¦   +-- SidePanel.tsx       // Side panel for post details
-¦   +-- AddCategoryModal.tsx // Modal for adding categories
-+-- next-env.d.ts
-+-- next.config.mjs
-+-- package.json
-+-- tailwind.config.ts
-+-- tsconfig.json
+.
+│   .cursorignore
+│   .env.local
+│   .eslintrc.json
+│   .gitignore
+│   components.json
+│   next-env.d.ts
+│   next.config.mjs
+│   package-lock.json
+│   package.json
+│   postcss.config.mjs
+│   README.md
+│   tailwind.config.ts
+│   tree.txt
+│   tsconfig.json
+├───app
+│   │   favicon.ico
+│   │   globals.css
+│   │   layout.tsx
+│   │   page.tsx
+│   ├───actions
+│   │       reddit.ts
+│   │       themes.ts
+│   ├───api
+│   │   └───auth
+│   │       └───sync
+│   ├───fonts
+│   │       GeistMonoVF.woff
+│   │       GeistVF.woff
+│   └───[subreddit]
+│       │   layout.tsx
+│       │   page.tsx
+│       │   
+│       └───themes
+│               page.tsx
+├───components
+│   │   AddSubredditModal.tsx
+│   │   LoadingSpinner.tsx
+│   │   PostsTable.tsx
+│   │   SubredditCard.tsx
+│   │   ThemeCard.tsx
+│   │   
+│   └───ui
+│           badge.tsx
+│           button.tsx
+│           card.tsx
+│           dialog.tsx
+│           dropdown-menu.tsx
+│           input.tsx
+│           label.tsx
+│           sheet.tsx
+│           table.tsx
+│           tabs.tsx
+├───hooks
+├───lib
+│       gemini.ts
+│       openai.ts
+│       reddit.ts
+│       subreddits.ts
+│       utils.ts
+├───requirements
+│       backend_instructions.md
+│       claude-converted-to-markdown-openai-o1-generated-product-requriments-document copy.md
+│       claude-converted-to-markdown-QwQ-32B-Preview-generated-product-requriments-document.md
+│       cursor-notes.md
+│       find-right-project-structure-generate-final-PRD.md
+│       frontend_instructions.md
+│       prompts.md
+│       QwQ-32B-Preview-generated-product-requriments-document.md
+│       vo.md
+├───services
+│   └───user
+└───utils
+
 ```
 
 ## Documentation and Code Examples
