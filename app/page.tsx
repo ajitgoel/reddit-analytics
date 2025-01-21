@@ -1,31 +1,10 @@
-"use client"
-
-import { useState } from "react"
 import { SubredditCard } from "@/components/SubredditCard"
-import { AddSubredditModal } from "@/components/AddSubredditModal"
-import { defaultSubreddits, type Subreddit } from "@/lib/subreddits"
+import { AddSubredditDialog } from "@/components/AddSubredditDialog"
+import { subredditService } from "@/services/subreddit/subredditService"
 
-export default function Home() {
-  const [subreddits, setSubreddits] = useState<Subreddit[]>(defaultSubreddits)
-
-  const handleAddSubreddit = async (subredditName: string) => {
-    // Check if subreddit already exists
-    if (subreddits.some((s) => s.name === subredditName)) {
-      return
-    }
-
-    // Fetch subreddit info
-    const response = await fetch(`https://www.reddit.com/r/${subredditName}/about.json`)
-    const data = await response.json()
-
-    const newSubreddit: Subreddit = {
-      name: subredditName,
-      description: data.data.public_description || `r/${subredditName} community`,
-      memberCount: data.data.subscribers,
-    }
-
-    setSubreddits((prev) => [...prev, newSubreddit])
-  }
+export default async function Home() {
+  // Fetch subreddits from Supabase
+  const subreddits = await subredditService.getAllSubreddits();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
@@ -34,7 +13,7 @@ export default function Home() {
           <h1 className="text-5xl font-extrabold mb-6 md:mb-0 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
             Reddit Analytics Platform
           </h1>
-          <AddSubredditModal onAddSubreddit={handleAddSubreddit} />
+          <AddSubredditDialog />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -42,8 +21,8 @@ export default function Home() {
             <SubredditCard
               key={subreddit.name}
               name={subreddit.name}
-              description={subreddit.description}
-              memberCount={subreddit.memberCount}
+              description={subreddit.description || `r/${subreddit.name} community`}
+              memberCount={subreddit.member_count || 0}
             />
           ))}
         </div>

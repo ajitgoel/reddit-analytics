@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge"
 import { CATEGORY_IDS } from "@/lib/constants"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import type { RedditPostData } from "@/services/subreddit/types"
 
 export interface RedditPost {
   id: string
@@ -24,7 +25,7 @@ export interface RedditPost {
 }
 
 interface PostsTableProps {
-  posts: RedditPost[]
+  posts: RedditPostData[]
 }
 
 type SortField = "score" | "num_comments" | "created_utc"
@@ -37,6 +38,15 @@ export function PostsTable({ posts }: PostsTableProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
   const [page, setPage] = useState(1)
 
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortOrder("desc")
+    }
+  }
+
   const sortedPosts = [...posts].sort((a, b) => {
     const modifier = sortOrder === "asc" ? 1 : -1
     if (sortField === "created_utc") {
@@ -47,15 +57,6 @@ export function PostsTable({ posts }: PostsTableProps) {
 
   const totalPages = Math.ceil(sortedPosts.length / ITEMS_PER_PAGE)
   const paginatedPosts = sortedPosts.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
-    } else {
-      setSortField(field)
-      setSortOrder("desc")
-    }
-  }
 
   return (
     <Card className="bg-gray-900 text-white border-gray-800">
@@ -136,7 +137,7 @@ export function PostsTable({ posts }: PostsTableProps) {
               </TableHeader>
               <TableBody>
                 {paginatedPosts.map((post) => (
-                  <TableRow key={post.id} className="hover:bg-gray-800">
+                  <TableRow key={post.reddit_post_id} className="hover:bg-gray-800">
                     <TableCell className="font-medium">
                       <a
                         href={post.url}
@@ -160,7 +161,7 @@ export function PostsTable({ posts }: PostsTableProps) {
                           ?.filter((cat) => cat.is_relevant)
                           .map((category) => (
                             <Badge
-                              key={`${post.id}-${category.category_id}`}
+                              key={`${post.reddit_post_id}-${category.category_id}`}
                               variant="secondary"
                               className="bg-gray-700 text-gray-200"
                             >

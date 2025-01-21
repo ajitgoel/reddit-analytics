@@ -45,35 +45,32 @@ export async function analyzePost(post: RedditPost): Promise<AnalysisResult> {
       {"categories":[{"id":"1","name":"Solution Request","is_relevant":true},{"id":"2","name":"Pain Point","is_relevant":false}]}
     `;
 
-    try {
-      const result = await model.generateContent(prompt);
-      const response = result.response;
-      const text = response.text().trim();
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text().trim();
+    
+    console.log('AI Response:', text);
+    
+    const jsonMatch = text.match(/\{.*\}/s);
+    if (jsonMatch) {
+      const jsonStr = jsonMatch[0];
+      const aiResponse = JSON.parse(jsonStr);
       
-      // Try to extract JSON if the response contains markdown formatting
-      const jsonMatch = text.match(/\{.*\}/s);
-      if (jsonMatch) {
-        const jsonStr = jsonMatch[0];
-        const aiResponse = JSON.parse(jsonStr);
-        
-        // Map the numeric IDs to UUIDs
-        return {
-          categories: aiResponse.categories.map(cat => ({
-            ...cat,
-            id: cat.id === "1" ? CATEGORY_IDS.SOLUTION_REQUEST
-              : cat.id === "2" ? CATEGORY_IDS.PAIN_POINT
-              : cat.id === "3" ? CATEGORY_IDS.FEATURE_REQUEST
-              : cat.id === "4" ? CATEGORY_IDS.BUG_REPORT
-              : CATEGORY_IDS.SUCCESS_STORY
-          }))
-        };
-      }
+      console.log('Parsed Categories:', aiResponse.categories);
       
-      throw new Error('Invalid JSON response from AI');
-    } catch (aiError) {
-      console.error('Error calling Gemini API:', aiError);
-      return getDefaultCategories();
+      return {
+        categories: aiResponse.categories.map(cat => ({
+          ...cat,
+          id: cat.id === "1" ? CATEGORY_IDS.SOLUTION_REQUEST
+            : cat.id === "2" ? CATEGORY_IDS.PAIN_POINT
+            : cat.id === "3" ? CATEGORY_IDS.FEATURE_REQUEST
+            : cat.id === "4" ? CATEGORY_IDS.BUG_REPORT
+            : CATEGORY_IDS.SUCCESS_STORY
+        }))
+      };
     }
+    
+    throw new Error('Invalid JSON response from AI');
   } catch (error) {
     console.error('Error in analyzePost:', error);
     return getDefaultCategories();

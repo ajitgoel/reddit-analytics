@@ -1,3 +1,5 @@
+"use client"
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import Link from "next/link"
 import { Users, ArrowUpRight } from "lucide-react"
@@ -5,7 +7,7 @@ import { Users, ArrowUpRight } from "lucide-react"
 interface SubredditCardProps {
   name: string
   description: string
-  memberCount?: number
+  memberCount: number
 }
 
 export function SubredditCard({ name, description, memberCount }: SubredditCardProps) {
@@ -20,12 +22,10 @@ export function SubredditCard({ name, description, memberCount }: SubredditCardP
         </CardHeader>
         <CardContent className="pt-6 -mt-6 bg-gray-900 rounded-t-xl relative z-10">
           <CardDescription className="text-gray-300">{description}</CardDescription>
-          {memberCount && (
-            <div className="flex items-center gap-2 mt-4 text-sm text-gray-400">
-              <Users className="w-4 h-4" />
-              <span>{memberCount.toLocaleString()} members</span>
-            </div>
-          )}
+          <div className="flex items-center text-gray-500">
+            <Users className="w-4 h-4 mr-2" />
+            <span>{memberCount.toLocaleString()} members</span>
+          </div>
         </CardContent>
       </Card>
     </Link>

@@ -1,69 +1,92 @@
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+"use client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ChevronRight, TrendingUp, TrendingDown, Minus } from "lucide-react"
+import { MessageSquare, Smile, Frown, HelpCircle, Lightbulb, Bug, Trophy } from "lucide-react"
 
 export interface Theme {
   id: string
   name: string
   description: string
-  sentiment: "positive" | "negative" | "neutral"
-  keywords: string[]
   postCount: number
   posts: {
     title: string
     url: string
-    sentiment: "positive" | "negative" | "neutral"
   }[]
 }
 
 interface ThemeCardProps {
   theme: Theme
-  onViewPosts: (theme: Theme) => void
+  onViewPosts?: () => void
 }
 
-const sentimentConfig = {
-  positive: { color: "bg-green-500 text-white", icon: TrendingUp },
-  negative: { color: "bg-red-500 text-white", icon: TrendingDown },
-  neutral: { color: "bg-gray-500 text-white", icon: Minus },
-}
+const themeConfig = {
+  'solution-requests': {
+    icon: HelpCircle,
+    color: 'text-blue-500',
+  },
+  'pain-points': {
+    icon: Frown,
+    color: 'text-red-500',
+  },
+  'feature-requests': {
+    icon: Lightbulb,
+    color: 'text-yellow-500',
+  },
+  'bug-reports': {
+    icon: Bug,
+    color: 'text-orange-500',
+  },
+  'success-stories': {
+    icon: Trophy,
+    color: 'text-green-500',
+  },
+} as const;
 
 export function ThemeCard({ theme, onViewPosts }: ThemeCardProps) {
-  const SentimentIcon = sentimentConfig[theme.sentiment].icon
+  const config = themeConfig[theme.id as keyof typeof themeConfig] || {
+    icon: MessageSquare,
+    color: 'text-gray-500'
+  };
 
   return (
-    <Card className="bg-gray-900 border-gray-800 overflow-hidden transition-all duration-300 hover:border-purple-500 hover:shadow-lg hover:shadow-purple-500/20">
-      <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-600 pb-8">
-        <CardTitle className="text-xl font-bold text-white flex items-center justify-between">
-          <span className="truncate mr-2">{theme.name}</span>
-          <Badge variant="outline" className={`${sentimentConfig[theme.sentiment].color} border-none`}>
-            <SentimentIcon className="w-4 h-4 mr-1" />
-            {theme.sentiment}
-          </Badge>
+    <Card className="bg-gray-900 text-white border-gray-800 hover:border-gray-700 transition-colors">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-xl font-bold flex items-center gap-2">
+          <config.icon className={`h-5 w-5 ${config.color}`} />
+          {theme.name}
         </CardTitle>
+        <Badge variant="secondary" className="bg-gray-800">
+          {theme.postCount} posts
+        </Badge>
       </CardHeader>
-      <CardContent className="pt-6 -mt-6 bg-gray-900 rounded-t-xl relative z-10">
-        <p className="text-gray-300 mb-4 line-clamp-2">{theme.description}</p>
-        <div className="mb-4 flex flex-wrap gap-2">
-          {theme.keywords.map((keyword, index) => (
-            <Badge key={index} variant="secondary" className="bg-gray-800 text-gray-300">
-              {keyword}
-            </Badge>
+      <CardContent>
+        <p className="text-gray-400 mb-4">{theme.description}</p>
+        <div className="space-y-2">
+          {theme.posts.slice(0, 3).map((post, index) => (
+            <a
+              key={index}
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-sm text-blue-400 hover:text-blue-300 hover:underline"
+            >
+              {post.title}
+            </a>
           ))}
+          {theme.posts.length > 3 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onViewPosts}
+              className="text-gray-400 hover:text-white"
+            >
+              View {theme.posts.length - 3} more posts...
+            </Button>
+          )}
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-900 flex justify-between items-center border-t border-gray-800 pt-4">
-        <span className="text-sm text-gray-400">{theme.postCount} posts</span>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 bg-purple-600 text-white border-purple-500 hover:bg-purple-700"
-          onClick={() => onViewPosts(theme)}
-        >
-          View Posts
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </CardFooter>
     </Card>
   )
 }
