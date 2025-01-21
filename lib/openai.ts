@@ -5,6 +5,15 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+export interface ThemeData {
+  name: string;
+  description: string;
+  sentiment: "positive" | "negative" | "neutral";
+  keywords: string[];
+  posts: string[];
+  postSentiments?: Record<string, "positive" | "negative" | "neutral">; // Define post sentiments type
+}
+
 export interface Theme {
   id: string;
   name: string;
@@ -60,7 +69,7 @@ export async function analyzeRedditPosts(posts: RedditPost[]): Promise<Theme[]> 
 
     const analysis = JSON.parse(completion.choices[0].message.content);
 
-    return analysis.themes.map((theme: any, index: number) => ({
+    return analysis.themes.map((theme: ThemeData, index: number) => ({
       id: `theme-${index + 1}`,
       name: theme.name,
       description: theme.description,
@@ -80,4 +89,4 @@ export async function analyzeRedditPosts(posts: RedditPost[]): Promise<Theme[]> 
     console.error("Error analyzing posts:", error);
     throw new Error("Failed to analyze posts");
   }
-} 
+}

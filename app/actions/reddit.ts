@@ -46,7 +46,7 @@ export async function getSubredditPosts(subredditName: string) {
     await subredditService.updateSubredditData(
       subredditName,
       // Only pass the post data without categories
-      analyzedPosts.map(({ categories, ...postData }) => postData),
+      analyzedPosts.map(({...postData }) => postData),
       // Pass categories separately
       analyzedPosts.flatMap(post => 
         post.categories.map(cat => ({

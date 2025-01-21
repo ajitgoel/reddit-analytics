@@ -3,13 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "eslint . --ext .ts,.tsx && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.9.14",
     "@google-cloud/vertexai": "^1.9.2",
     "@google/generative-ai": "^0.21.0",
     "@radix-ui/react-dialog": "^1.1.4",

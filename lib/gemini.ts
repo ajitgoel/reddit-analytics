@@ -31,34 +31,6 @@ export interface PostAnalysis {
   sentiment: "positive" | "negative" | "neutral";
 }
 
-const ANALYSIS_PROMPT = `
-Analyze these Reddit posts and categorize them into themes. Return a JSON object with the following structure:
-
-{
-  "themes": [
-    {
-      "name": "Solution Requests",
-      "description": "Posts where users are seeking solutions to problems",
-      "sentiment": "neutral",
-      "keywords": ["help", "solution", "problem", "fix", "how to"],
-      "posts": ["post-id-1"],
-      "postSentiments": {
-        "post-id-1": "neutral"
-      }
-    }
-  ]
-}
-
-Important rules:
-1. Theme names must be one of: "Solution Requests", "Pain & Anger", "Advice Requests", "Money Talk"
-2. Sentiment must be exactly: "positive", "negative", or "neutral"
-3. Include maximum 5 keywords per theme
-4. Only include themes that have at least one matching post
-5. Each post can belong to multiple themes
-6. Response must be valid JSON
-
-Analyze the posts and categorize them based on their content and sentiment.`;
-
 export async function analyzePost(post: RedditPost): Promise<PostAnalysis> {
   const model = genAI.getGenerativeModel({ model: "gemini-pro" }, requestOptions);
 

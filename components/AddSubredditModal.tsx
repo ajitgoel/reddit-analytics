@@ -31,7 +31,6 @@ export function AddSubredditModal({ onAddSubreddit }: AddSubredditModalProps) {
     setError("")
     setIsLoading(true)
 
-    // Extract subreddit name from input (handle both URL and direct name)
     const subredditName = subredditInput
       .toLowerCase()
       .replace(/^(https?:\/\/)?(www\.)?reddit\.com\/r\//, "")
@@ -39,19 +38,18 @@ export function AddSubredditModal({ onAddSubreddit }: AddSubredditModalProps) {
       .split("/")[0]
 
     try {
-      // Validate subreddit exists
       const response = await fetch(`https://www.reddit.com/r/${subredditName}/about.json`)
 
       if (!response.ok) {
         throw new Error("Subreddit not found")
       }
 
-      const data = await response.json()
+      await response.json()
 
       onAddSubreddit(subredditName)
       setSubredditInput("")
       setIsOpen(false)
-    } catch (err) {
+    } catch {
       setError("Please enter a valid subreddit name or URL")
     } finally {
       setIsLoading(false)

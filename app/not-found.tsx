@@ -9,7 +9,7 @@ export default function NotFound() {
           404 - Subreddit Not Found
         </h1>
         <p className="text-gray-400">
-          The subreddit you're looking for doesn't exist or couldn't be accessed.
+          The subreddit you&apos;re looking for doesn&apos;t exist or couldn&apos;t be accessed.
         </p>
         <Link href="/">
           <Button
