@@ -4,6 +4,7 @@ import { analyzePost } from "@/lib/ai";
 import { notFound } from "next/navigation";
 import { SubredditPageContent } from "./SubredditPageContent";
 import { Metadata } from 'next';
+import { fetchRecentPosts } from '../../lib/reddit'; // Adjust the import path as necessary
 
 interface PageProps {
   params: { subreddit: string };
@@ -12,7 +13,7 @@ interface PageProps {
 export async function generateMetadata(
   { params }: PageProps
 ): Promise<Metadata> {
-  const subredditName = params.subreddit;
+  const subredditName = await params.subreddit;
   return {
     title: `r/${subredditName.toLowerCase()} Analytics`,
     description: `Analytics and insights for r/${subredditName.toLowerCase()}`,
@@ -20,7 +21,7 @@ export async function generateMetadata(
 }
 
 const SubredditPage = async ({ params }: { params: { subreddit: string } }) => {
-  const subredditName = params.subreddit;
+  const subredditName = await params.subreddit;
   console.log('Starting to load subreddit:', subredditName);
 
   try {
