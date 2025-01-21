@@ -5,27 +5,22 @@ import { notFound } from "next/navigation";
 import { SubredditPageContent } from "./SubredditPageContent";
 import { Metadata } from 'next';
 
-interface PageProps {
+export async function generateMetadata({
+  params,
+}: {
   params: { subreddit: string };
-}
-
-export async function generateMetadata(
-  { params }: PageProps
-): Promise<Metadata> {
-  const subredditName = await params.subreddit;
+}): Promise<Metadata> {
   return {
-    title: `r/${subredditName.toLowerCase()} Analytics`,
-    description: `Analytics and insights for r/${subredditName.toLowerCase()}`,
+    title: `r/${params.subreddit.toLowerCase()} Analytics`,
+    description: `Analytics and insights for r/${params.subreddit.toLowerCase()}`,
   };
 }
 
-interface PageProps {
-  params: {
-    subreddit: string;
-  };
-}
-
-const SubredditPage = async ({ params }: PageProps) => {
+const SubredditPage = async ({
+  params,
+}: {
+  params: { subreddit: string };
+}) => {
   const subredditName = await params.subreddit;
   console.log('Starting to load subreddit:', subredditName);
 
