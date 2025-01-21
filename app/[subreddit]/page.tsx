@@ -4,7 +4,6 @@ import { analyzePost } from "@/lib/ai";
 import { notFound } from "next/navigation";
 import { SubredditPageContent } from "./SubredditPageContent";
 import { Metadata } from 'next';
-import { fetchRecentPosts } from '../../lib/reddit'; // Adjust the import path as necessary
 
 interface PageProps {
   params: { subreddit: string };
