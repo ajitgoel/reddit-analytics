@@ -19,7 +19,13 @@ export async function generateMetadata(
   };
 }
 
-const SubredditPage = async ({ params }: { params: { subreddit: string } }) => {
+interface PageProps {
+  params: {
+    subreddit: string;
+  };
+}
+
+const SubredditPage = async ({ params }: PageProps) => {
   const subredditName = await params.subreddit;
   console.log('Starting to load subreddit:', subredditName);
 
