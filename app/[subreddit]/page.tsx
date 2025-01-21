@@ -12,46 +12,62 @@ interface PageProps {
 export async function generateMetadata(
   { params }: PageProps
 ): Promise<Metadata> {
+  const subredditName = params.subreddit;
   return {
-    title: `r/${params.subreddit.toLowerCase()} Analytics`,
-    description: `Analytics and insights for r/${params.subreddit.toLowerCase()}`,
+    title: `r/${subredditName.toLowerCase()} Analytics`,
+    description: `Analytics and insights for r/${subredditName.toLowerCase()}`,
   };
 }
 
-export default async function SubredditPage(
-  { params }: PageProps
-) {
-  const subredditName = params.subreddit.toLowerCase();
+const SubredditPage = async ({ params }: { params: { subreddit: string } }) => {
+  const subredditName = params.subreddit;
+  console.log('Starting to load subreddit:', subredditName);
 
   try {
-    // Get subreddit data
-    const { needsRefresh, posts } = await subredditService.getSubredditData(
-      subredditName
-    );
+    // First check if the subreddit exists in our database
+    console.log('Checking if subreddit exists in database...');
+    const subredditExists = await subredditService.checkSubredditExists(subredditName);
+    console.log('Subreddit exists in database:', subredditExists);
+    
+    if (!subredditExists) {
+      console.log('Subreddit not found in database, showing 404');
+      notFound();
+    }
 
-    // If data is fresh, return cached data with categories
-    if (!needsRefresh && posts) {
+    // Get subreddit data
+    console.log('Fetching subreddit data from database...');
+    const { needsRefresh, posts } = await subredditService.getSubredditData(subredditName);
+    console.log('Got subreddit data:', { needsRefresh, postCount: posts?.length });
+
+    // If data is fresh, return cached data
+    if (!needsRefresh && posts && posts.length > 0) {
+      console.log('Using cached data, posts count:', posts.length);
       return <SubredditPageContent posts={posts} />;
     }
 
     // If data is stale or doesn't exist, fetch new data
+    console.log('Fetching fresh data from Reddit API...');
     const reddit = getRedditClient();
     let newPosts;
     try {
       const subreddit = await reddit.getSubreddit(subredditName);
       newPosts = await subreddit.getTop({ time: "day", limit: 100 });
+      console.log('Fetched posts from Reddit:', newPosts.length);
     } catch (redditError) {
       console.error('Error fetching from Reddit:', redditError);
-      // If we have cached posts, show them even if stale
-      if (posts) {
+      if (posts && posts.length > 0) {
+        console.log('Using stale cached data after Reddit API error');
         return <SubredditPageContent posts={posts} />;
       }
-      throw redditError;
+      console.log('No cached data available, showing 404');
+      notFound();
     }
 
     // Analyze posts with AI
+    console.log('Starting AI analysis of posts...');
     const analyzedPosts = await Promise.all(
       newPosts.map(async (post) => {
+        console.log('Analyzing post:', post.id);
         const analysis = await analyzePost(post);
         return {
           reddit_post_id: post.id,
@@ -69,8 +85,10 @@ export default async function SubredditPage(
         };
       })
     );
+    console.log('Completed AI analysis, analyzed posts:', analyzedPosts.length);
 
     // Update Supabase with new data
+    console.log('Updating Supabase with new data...');
     await subredditService.updateSubredditData(
       subredditName,
       analyzedPosts,
@@ -82,13 +100,13 @@ export default async function SubredditPage(
         }))
       )
     );
+    console.log('Successfully updated Supabase');
 
     return <SubredditPageContent posts={analyzedPosts} />;
   } catch (error) {
     console.error("Error loading subreddit:", error);
-    if (error instanceof Error && error.message.includes('not found')) {
-      notFound();
-    }
-    throw error;
+    notFound();
   }
-} 
+};
+
+export default SubredditPage; 

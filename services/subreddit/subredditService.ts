@@ -17,16 +17,22 @@ export class SubredditService {
     categories?: PostCategoryData[];
   }> {
     try {
+      console.log('Getting subreddit data for:', subredditName);
       // 1. Get or create subreddit with Reddit data
       const redditResponse = await fetch(
         `https://www.reddit.com/r/${subredditName}/about.json`
       );
       
       if (!redditResponse.ok) {
+        console.error('Failed to fetch from Reddit:', redditResponse.statusText);
         throw new Error(`Failed to fetch subreddit data from Reddit: ${redditResponse.statusText}`);
       }
       
       const redditData = await redditResponse.json();
+      console.log('Got Reddit data:', { 
+        subscribers: redditData.data?.subscribers,
+        description: redditData.data?.public_description?.substring(0, 100) 
+      });
 
       const { data: subreddit, error: subredditError } = await this.supabase
         .from('subreddits')
@@ -82,6 +88,12 @@ export class SubredditService {
     categories: PostCategoryData[]
   ): Promise<void> {
     try {
+      console.log('Updating subreddit data:', { 
+        subreddit: subredditName, 
+        postsCount: posts.length,
+        categoriesCount: categories.length 
+      });
+
       // 1. Get the existing subreddit
       const { data: subreddit, error: subredditError } = await this.supabase
         .from('subreddits')
@@ -200,6 +212,28 @@ export class SubredditService {
     } catch (error) {
       console.error('Error in getAllSubreddits:', error);
       throw error;
+    }
+  }
+
+  async checkSubredditExists(subredditName: string): Promise<boolean> {
+    try {
+      console.log('Checking subreddit existence:', subredditName);
+      const { data, error } = await this.supabase
+        .from('subreddits')
+        .select('id')
+        .eq('name', subredditName.toLowerCase())
+        .single();
+
+      if (error) {
+        console.error('Error checking subreddit:', error);
+        return false;
+      }
+
+      console.log('Subreddit check result:', { exists: !!data, data });
+      return !!data;
+    } catch (error) {
+      console.error('Error in checkSubredditExists:', error);
+      return false;
     }
   }
 }
