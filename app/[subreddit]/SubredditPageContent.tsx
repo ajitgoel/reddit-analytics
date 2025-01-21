@@ -3,20 +3,10 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PostsTable } from "@/components/PostsTable";
-import { ThemeCard } from "@/components/ThemeCard";
+import { ThemeCard, Theme } from "@/components/ThemeCard";
+import { ThemeSidePanel } from "@/components/ThemeSidePanel";
 import type { RedditPostData } from "@/services/subreddit/types";
 import { CATEGORY_IDS } from "@/lib/constants";
-
-interface Theme {
-  id: string;
-  name: string;
-  description: string;
-  postCount: number;
-  posts: {
-    title: string;
-    url: string;
-  }[];
-}
 
 interface SubredditPageContentProps {
   posts: RedditPostData[];
@@ -24,9 +14,16 @@ interface SubredditPageContentProps {
 
 export function SubredditPageContent({ posts }: SubredditPageContentProps) {
   const [activeTab, setActiveTab] = useState("posts");
+  const [selectedTheme, setSelectedTheme] = useState<Theme | null>(null);
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
 
   // Generate themes from posts
   const themes = generateThemes(posts);
+
+  const handleThemeClick = (theme: Theme) => {
+    setSelectedTheme(theme);
+    setSidePanelOpen(true);
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -51,11 +48,24 @@ export function SubredditPageContent({ posts }: SubredditPageContentProps) {
         <TabsContent value="themes" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {themes.map((theme) => (
-              <ThemeCard key={theme.id} theme={theme} />
+              <ThemeCard 
+                key={theme.id} 
+                theme={theme} 
+                onClick={handleThemeClick}
+              />
             ))}
           </div>
         </TabsContent>
       </Tabs>
+
+      <ThemeSidePanel
+        theme={selectedTheme}
+        isOpen={sidePanelOpen}
+        onClose={() => {
+          setSidePanelOpen(false);
+          setSelectedTheme(null);
+        }}
+      />
     </div>
   );
 }
