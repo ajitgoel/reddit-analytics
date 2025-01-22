@@ -16,7 +16,7 @@ export async function getSubredditPosts(subredditName: string) {
 
     // 2. If data is stale or doesn't exist, fetch new data
     const reddit = getRedditClient();
-    const subreddit = await reddit.getSubreddit(subredditName);
+    const subreddit=await reddit.getSubreddit(subredditName);
     const newPosts = await subreddit.getTop({ time: 'day', limit: 100 });
 
     // 3. Analyze posts with AI

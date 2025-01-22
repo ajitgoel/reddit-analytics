@@ -4,28 +4,36 @@ import { analyzePost } from "@/lib/ai";
 import { notFound } from "next/navigation";
 import { SubredditPageContent } from "./SubredditPageContent";
 import { Metadata } from 'next';
+import type { Submission } from "snoowrap";
+import type { RedditPostData } from "@/services/subreddit/types";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ subreddit: string }>;
-}): Promise<Metadata> {
-  const { subreddit } = await params; // Await params here
-  const subredditName = subreddit;
-
-  return {
-    title: `r/${subredditName.toLowerCase()} Analytics`,
-    description: `Analytics and insights for r/${subredditName.toLowerCase()}`,
+interface PageParams {
+  params: {
+    subreddit: string;
   };
 }
 
-const SubredditPage = async ({
-  params,
-}: {
-  params: Promise<{ subreddit: string }>;
-}) => {
-  const { subreddit } = await params; // Await params here
-  const subredditName = subreddit;
+interface AnalyzedPost {
+  reddit_post_id: string;
+  title: string;
+  content: string;
+  score: number;
+  num_comments: number;
+  created_utc: Date;
+  url: string;
+  analyzed_at: Date;
+  post_categories: { category_id: string; is_relevant: boolean; }[];
+}
+
+export async function generateMetadata({ params }: PageParams): Promise<Metadata> {
+  return {
+    title: `r/${params.subreddit.toLowerCase()} Analytics`,
+    description: `Analytics and insights for r/${params.subreddit.toLowerCase()}`,
+  };
+}
+
+const SubredditPage = async ({ params }: PageParams) => {
+  const subredditName = params.subreddit.toLowerCase();
   console.log('Starting to load subreddit:', subredditName);
 
   try {
@@ -53,7 +61,7 @@ const SubredditPage = async ({
     // If data is stale or doesn't exist, fetch new data
     console.log('Fetching fresh data from Reddit API...');
     const reddit = getRedditClient();
-    let newPosts;
+    let newPosts: Submission[];
     try {
       const subreddit = await reddit.getSubreddit(subredditName);
       newPosts = await subreddit.getTop({ time: "day", limit: 100 });
@@ -71,7 +79,7 @@ const SubredditPage = async ({
     // Analyze posts with AI
     console.log('Starting AI analysis of posts...');
     const analyzedPosts = await Promise.all(
-      newPosts.map(async (post) => {
+      newPosts.map(async (post): Promise<AnalyzedPost> => {
         console.log('Analyzing post:', post.id);
         const analysis = await analyzePost(post);
         return {
