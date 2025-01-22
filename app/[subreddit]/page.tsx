@@ -12,10 +12,13 @@ interface PageParams {
   };
 }
 
-export async function generateMetadata(
-  { params }: PageParams
-): Promise<Metadata> {
-  const subredditName = await params.subreddit;
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ subreddit: string }>;
+}): Promise<Metadata> {
+  const { subreddit } = await params; // Await params here
+  const subredditName = subreddit;
 
   return {
     title: `r/${subredditName.toLowerCase()} Analytics`,
@@ -23,8 +26,13 @@ export async function generateMetadata(
   };
 }
 
-const SubredditPage = async ({ params }: PageParams) => {
-  const subredditName = await params.subreddit;
+const SubredditPage = async ({
+  params,
+}: {
+  params: Promise<{ subreddit: string }>;
+}) => {
+  const { subreddit } = await params; // Await params here
+  const subredditName = subreddit;
   console.log('Starting to load subreddit:', subredditName);
 
   try {
