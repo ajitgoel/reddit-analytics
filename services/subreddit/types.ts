@@ -15,6 +15,7 @@ export interface RedditPostData {
   created_utc: Date;
   url: string;
   analyzed_at: Date;
+  post_categories: { category_id: string; is_relevant: boolean }[];
 }
 
 export interface CategoryData {
