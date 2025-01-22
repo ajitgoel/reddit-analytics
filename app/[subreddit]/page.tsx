@@ -5,13 +5,6 @@ import { notFound } from "next/navigation";
 import { SubredditPageContent } from "./SubredditPageContent";
 import { Metadata } from 'next';
 
-// Define params type for both metadata and page component
-interface PageParams {
-  params: {
-    subreddit: string;
-  };
-}
-
 export async function generateMetadata({
   params,
 }: {
