@@ -5,11 +5,16 @@ import { notFound } from "next/navigation";
 import { SubredditPageContent } from "./SubredditPageContent";
 import { Metadata } from 'next';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { subreddit: string };
-}): Promise<Metadata> {
+// Define params type for both metadata and page component
+interface PageParams {
+  params: {
+    subreddit: string;
+  };
+}
+
+export async function generateMetadata(
+  { params }: PageParams
+): Promise<Metadata> {
   const subredditName = params.subreddit;
 
   return {
@@ -18,11 +23,7 @@ export async function generateMetadata({
   };
 }
 
-const SubredditPage = async ({
-  params,
-}: {
-  params: { subreddit: string };
-}) => {
+const SubredditPage = async ({ params }: PageParams) => {
   const subredditName = params.subreddit;
   console.log('Starting to load subreddit:', subredditName);
 
