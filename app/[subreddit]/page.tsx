@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { SubredditPageContent } from "./SubredditPageContent";
 import { Metadata } from 'next';
 import type { Submission } from "snoowrap";
-import type { RedditPostData } from "@/services/subreddit/types";
 
 interface PageParams {
   params: {
