@@ -15,7 +15,7 @@ interface PageParams {
 export async function generateMetadata(
   { params }: PageParams
 ): Promise<Metadata> {
-  const subredditName = params.subreddit;
+  const subredditName = await params.subreddit;
 
   return {
     title: `r/${subredditName.toLowerCase()} Analytics`,
@@ -24,7 +24,7 @@ export async function generateMetadata(
 }
 
 const SubredditPage = async ({ params }: PageParams) => {
-  const subredditName = params.subreddit;
+  const subredditName = await params.subreddit;
   console.log('Starting to load subreddit:', subredditName);
 
   try {
